@@ -1,0 +1,189 @@
+========== demo01 ==========
+导包(4+2)
+一个最基本的Spring程序需要以下包(4+2)
+
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-4.2.4.RELEASE-dist\spring-framework-4.2.4.RELEASE\libs
+	-核心容器包4个
+	-spring-beans-4.2.4.RELEASE.jar
+	-spring-context-4.2.4.RELEASE.jar
+	-spring-core-4.2.4.RELEASE.jar
+	-spring-expression-4.2.4.RELEASE.jar
+	
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-3.0.2.RELEASE-dependencies\org.apache.commons\com.springsource.org.apache.commons.logging\1.1.1
+	-日志记录包1个
+	-com.springsource.org.apache.commons.logging-1.1.1.jar
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-3.0.2.RELEASE-dependencies\org.apache.log4j\com.springsource.org.apache.log4j\1.2.15
+	-日志记录依赖包1个
+	com.springsource.org.apache.log4j-1.2.15.jar
+
+1.定义接口：IStudentService
+2.定义实体类：StudentServiceImpl
+3.新建Spring配置文件：在src下，命名为application.xml(测试用，使用application-demo1.xml)
+	从file:///E:/01_JAVA/101_software&doc/15_spring/spring-framework-4.2.4.RELEASE-dist/spring-framework-4.2.4.RELEASE/docs/spring-framework-reference/html/xsd-configuration.html
+	拷贝xml的文件头
+4.定义bean元素
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <bean id="studentService" class="demo1.StudentServiceImpl"></bean>
+
+</beans>
+
+5.定义测试类TestDemo
+	(Eclipse中类名上按Ctrl+T可以查看继承关系)
+	获取容器有2个接口可以实现：ApplicationContext(开发中使用)和BeanFactory
+	-分析ApplicationContext(extends HierarchicalBeanFactory -> extends BeanFactory)
+		-有2个实现类
+		-ClassPathXmlApplicationContext
+			-配置文件在项目的类路径下 new ClassPathXmlApplicationContext("application-demo1.xml")
+		-FileSystemXmlApplicationContext
+			-配置文件在本地磁盘目录下 new FileSystemXmlApplicationContext("d:/application-demo1.xml")
+			-配置文件在和src同级的目录下 new FileSystemXmlApplicationContext("application-demo1.xml")
+	-分析BeanFactory
+		-使用XmlBeanFactory实例化，接收参数为Resource接口对象
+			-Resource接口 用于读取Spring配置文件
+			-2个实现子类
+				-ClassPathResource
+				-FileySystemResource
+		-获取容器：获取类路径下的配置文件
+			BeanFactory bf = new XmlBeanFactory(new ClassPathResource("application-demo1.xml"))
+		-获取容器：获取当前项目根目录下的配置文件
+			BeanFactory bf = new XmlBeanFactory(new FileySystemResource("application-demo1.xml"))
+	-ApplicationContext
+		-容器对象初始化之后，所有对象都装配好，程序调用直接从内存中取出即可，执行效率高，占用内存大
+	-BeanFactory
+		-调用getBean()的时候才正式装配对象
+
+========== ba01 ==========
+-getBean()
+	-从容器获取指定的bean实例，传入application.xml中定义的bean id
+	-首先调用bean类的无参构造
+========== ba02 ==========
+-动态工厂Bean
+	-定义工厂类
+	package beanAssemble.ba02;
+
+	public class ServiceFactory {
+	/**
+	 * IUserService工厂类
+	 * @return
+	 */
+	public IUserService getUserService() {
+		return new UserServiceImpl();
+	}
+}
+	-xml配置
+	 <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <bean id="factory" class="beanAssemble.ba02.ServiceFactory"></bean>
+    <!-- 
+    	动态工厂实现
+    	factory-bean 指定对应的工厂Bean
+    	factory-method 指定创建对象所用的方法
+     -->
+	<bean id="userService" factory-bean="factory" factory-method="getUserService"></bean>
+========== ba03 ==========
+-静态工厂Bean
+	-无需工厂实例，工厂类使用static方法
+	-工厂类
+	package beanAssemble.ba03;
+
+	public class ServiceFactory {
+	/**
+	 * IUserService静态工厂类
+	 * @return
+	 */
+	public static IUserService getUserService() {
+		return new UserServiceImpl();
+	}
+}
+	-xml配置
+	<!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <!-- 
+    	静态工厂实现
+    	factory-method 指定创建对象所用的方法
+     -->
+	<bean id="userService" class="beanAssemble.ba03.ServiceFactory" factory-method="getUserService"></bean>
+========== ba04 ==========
+-Bean的作用域(xml属性scope)，一共5个
+	-singleton 单例(默认) -容器创建时就装配好
+	-prototype 多例 -代码中使用到这个bean才进行装配
+	--以下3个是Web应用中使用Spring才有效
+	-request 每次请求产生一个
+	-session 每个不同HTTP session产生一个
+	-global session 
+-例子：
+	-xml配置
+	<!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <!-- 
+    	scope bean作用域
+    	-singleton 单例(默认) -容器创建时就装配好
+		-prototype 多例 -代码中使用到这个bean才进行装配
+     -->
+	<bean id="userService1" class="beanAssemble.ba04.UserServiceImpl" scope="singleton"></bean>
+	<bean id="userService2" class="beanAssemble.ba04.UserServiceImpl" scope="prototype"></bean>
+
+========== ba05 ==========
+-Bean后处理器(BeanPostProcessor类)
+	-Bean初始化，自动执行后处理类的2个方法，用于增强Bean中的方法
+		-在目标初始化完毕前，容器调用该方法
+		-public Object postProcessAfterInitialization(Object arg0, String arg1) throws BeansException{}
+		
+		-在目标初始化结束后，容器调用该方法
+		-public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException{}
+		
+	-xml配置
+		<bean id="studentService" class="beanAssemble.ba05.StudentServiceImpl"></bean>
+		<bean id="teacherService" class="beanAssemble.ba05.TeacherServiceImpl"></bean>
+		<!-- Bean后处理器 -->
+		<bean class="beanAssemble.ba05.MyBeanPostProcessor" />
+========== ba06 ==========
+-bean创建后行为，销毁前行为
+	-实体类
+	@Override
+	public void setUp() {
+		System.out.println("初始化完毕后的行为");
+	}
+	
+	@Override
+	public void tearDown() {
+		System.out.println("销毁前的行为");
+	}
+	-xml配置
+	-destroy-method要能看到效果，2个条件
+		-单例
+		-容器关闭
+	<bean id="userService" class="beanAssemble.ba06.UserServiceImpl" 
+			init-method="setUp" destroy-method="tearDown"></bean>
+	-测试程序
+	public void test() {
+		ApplicationContext ac = new ClassPathXmlApplicationContext("beanAssemble/application-ba06.xml");
+		// 从容器获取Service
+		IUserService userService = (IUserService) ac.getBean("userService");
+		userService.doSome();
+		userService.doOther();
+		// 关闭容器对象
+		((ClassPathXmlApplicationContext) ac).close();
+	}
+
+-bean的生命周期
+
+	
