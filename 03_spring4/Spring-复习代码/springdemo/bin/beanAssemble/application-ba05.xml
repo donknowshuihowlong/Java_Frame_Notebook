@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <!-- Bean后处理器 -->
+	<bean id="beanProcessor" class="beanAssemble.ba05.MyBeanPostProcessor" />
+    <!-- 
+    	scope bean作用域
+    	-singleton 单例(默认) -容器创建时就装配好
+		-prototype 多例 -代码中使用到这个bean才进行装配
+     -->
+	<bean id="studentService" class="beanAssemble.ba05.StudentServiceImpl"></bean>
+	<bean id="teacherService" class="beanAssemble.ba05.TeacherServiceImpl"></bean>
+	
+</beans>

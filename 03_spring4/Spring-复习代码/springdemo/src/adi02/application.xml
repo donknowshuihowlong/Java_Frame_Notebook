@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:component-scan base-package="adi02" />
+    <!-- bean definitions here -->
+	<bean id="school" class="adi02.School">
+		<property name="schoolName" value="xx小学" />
+	</bean>
+	<bean id="student" name="student" class="adi02.Student">
+		<property name="stuName" value="xiaoming" />
+		<property name="stuAge" value="18" />
+		<property name="stuSchool" ref="school" />
+	</bean>
+	
+</beans>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+     <!-- c命名空间注入，采用构造注入，需要构造方法 -->
+     <bean id="school" class="di02_2.School">
+    	<property name="schoolName" value="xx大学"></property>
+    </bean>
+     
+    <bean id="student" class="di02_2.Student"
+    c:name="xiaoming" c:age="18" c:school-ref="school"
+    ></bean>
+</beans>

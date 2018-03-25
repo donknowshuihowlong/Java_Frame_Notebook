@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- 使用同类抽象Bean注入 -->
+    <bean id="abase" class="di08.ABase" abstract="true">
+    	<property name="department" value="计算机系" />
+    	<property name="school" value="xx大学" />
+    </bean>
+    <bean id="student" class="di08.Student" parent="abase">
+    	<property name="name" value="xiaoming"></property>
+    	<property name="score" value="100"></property>
+    </bean>
+    <bean id="teacher" class="di08.Teacher" parent="abase">
+    	<property name="name" value="xiaomei"></property>
+    	<property name="age" value="30"></property>
+    </bean>
+</beans>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- SPEL表达式 -->
+    <bean id="school" class="di05.School">
+    	<property name="schoolName" value="xxUNIVERCITY"></property>
+    </bean>
+ 	<bean id="person" class="di05.Person">
+ 		<property name="name" value="xiaoming" />
+ 		<property name="age" value="#{T(java.lang.Math).random()*30}" />
+ 	</bean>
+ 	<bean id="student" class="di05.Student">
+ 		<!-- 引用person的属性 -->
+ 		<property name="stuName" value="#{person.name}" />
+ 		<property name="stuAge" value="#{person.age}" />
+ 		<!-- 引用school对象注入属性 -->
+ 		<property name="stuSchool" value="#{school}"></property>
+ 		<!-- 指定属性指定其方法 -->
+ 		<!-- <property name="schoolName" value="#{school.name.toLowerCase()}"></property> -->
+ 	</bean>
+</beans>

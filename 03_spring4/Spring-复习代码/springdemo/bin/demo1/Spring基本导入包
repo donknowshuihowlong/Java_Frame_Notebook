@@ -1,0 +1,18 @@
+一个最基本的Spring程序需要以下包(4+2)
+
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-4.2.4.RELEASE-dist\spring-framework-4.2.4.RELEASE\libs
+	-核心容器包4个
+	-spring-beans-4.2.4.RELEASE.jar
+	-spring-context-4.2.4.RELEASE.jar
+	-spring-core-4.2.4.RELEASE.jar
+	-spring-expression-4.2.4.RELEASE.jar
+	
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-3.0.2.RELEASE-dependencies\org.apache.commons\com.springsource.org.apache.commons.logging\1.1.1
+	-日志记录包1个
+	-com.springsource.org.apache.commons.logging-1.1.1.jar
+	E:\01_JAVA\101_software&doc\15_spring\spring-framework-3.0.2.RELEASE-dependencies\org.apache.log4j\com.springsource.org.apache.log4j\1.2.15
+	-日志记录依赖包1个
+	com.springsource.org.apache.log4j-1.2.15.jar
+	
+	
+	

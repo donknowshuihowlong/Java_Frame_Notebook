@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <!-- 
+    	id是bean实例的唯一标识，程序通过id访问bean，bean之间的依赖关系通过id关联
+    	class指定bean所属的类
+     -->
+    <bean id="school" class="di01_2.School">
+    	<property name="schoolName" value="xx大学"></property>
+    </bean>
+    <!-- 构造注入 -->
+    
+    <bean id="student2" class="di01_2.Student">
+	    <!-- name属性: 构造函数的参数名 -->
+		<!-- index属性: 构造函数的参数索引 -->
+		<!-- type属性: 构造函数的参数类型-->
+		<!-- <constructor-arg name="name" index="0" type="java.lang.Integer" value="999"  ></constructor-arg> -->
+    	<constructor-arg name="name" value="xiaoming"></constructor-arg>
+    	<constructor-arg name="age" value="18"></constructor-arg>
+    	<constructor-arg name="school" ref="school"></constructor-arg>
+    </bean>
+
+</beans>
