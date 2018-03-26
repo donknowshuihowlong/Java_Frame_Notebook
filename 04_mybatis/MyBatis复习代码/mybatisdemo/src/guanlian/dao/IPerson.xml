@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="guanlian.dao.IPerson">
+	<!-- 多表链接查询 一对多 一个国家对应多个人
+	根据ID查国家以及国家的人信息 
+	第二种方式 多表分开查询，再链接到一起 -->
+	<!-- 这里的xxx来自于 ICountry.xml中配置的中的column的cid
+	
+	<collection property="persons" ofType="Person" 
+			select="guanlian.dao.IPerson.selectPersonByCountryId" column="cid">
+			
+	而这个cid又是来自于这里的cid
+	<select id="selectCountryById" resultMap="CountryMapper">
+		 	select cid,cname from t_country where cid=#{yyy}
+		 </select>
+	-->
+	<select id="selectPersonByCountryId" resultType="Person">
+		select pid,pname
+		from t_person
+		where countryid=#{xxx}
+	</select>
+	<!-- 多表查询 多对一  多个人属于同一个国家 
+		在查询多的一方的数据的时候，把一的一方的数据也显示出来
+	-->
+	<!-- 第一种查询方式 -->
+	<resultMap type="Person" id="PersonMapper">
+		<id column="pid" property="pid" />
+		<result column="pname" property="pname"/>
+		<association property="country" javaType="Country">
+			<id column="cid" property="cid"/>
+			<result column="cname" property="cname"/>
+		</association>
+	</resultMap>
+	<!-- 测试第二种方式，这里先注释掉 -->
+	<!-- 
+	<select id="selectPersonById" resultMap="PersonMapper">
+		select pid,pname,cid,cname
+		from t_person,t_country
+		where pid=#{xxx} and countryid=cid
+	</select>
+	 -->
+	<!-- 第二种查询方式 -->
+	<!-- 
+		流程是：
+			1. 先根据pid查询到Person对象的countryid，把countryid传递给association中column="countryid"
+			2. 再根据获取的countryid传递给select=""
+			3. 执行SQL,返回查询到的country对象信息，包装成PersonMapper2
+	 -->
+	<resultMap type="Person" id="PersonMapper2">
+		<id column="pid" property="pid" />
+		<result column="pname" property="pname"/>
+		<association property="country" javaType="Country"
+		select="guanlian.dao.ICountry.selectCountryById2" column="countryid"/>
+	</resultMap>
+	<select id="selectPersonById" resultMap="PersonMapper2">
+		select pid,pname,countryid
+		from t_person
+		where pid=#{xxx}
+	</select>
+	
+	
+</mapper>

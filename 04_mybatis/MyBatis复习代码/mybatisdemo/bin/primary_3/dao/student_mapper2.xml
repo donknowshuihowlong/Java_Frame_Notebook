@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace
+1. 隔离SQL语句，如果同个namespace下有相同id的SQL语句，就会报错
+ -->
+<mapper namespace="primary_3.mapper2">
+	<insert id="insertStudent" parameterType="primary_3.Student">
+		<!-- 书写SQL语句 -->
+		<!-- #{} 中书写的实体类的属性名 -->
+		insert into t_student(name,age,score)
+		values(#{name},#{age},#{score})
+	</insert>
+</mapper>

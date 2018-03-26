@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace
+1. 隔离SQL语句，如果同个namespace下有相同id的SQL语句，就会报错
+2. 实现Mapper动态代理
+ -->
+ <!-- 
+ 	分析StudentDaoImpl.java实现类
+ 	这个Dao接口实现类本质工作：
+	通过SqlSession的API定位到文件的mapper.xml的对应ID的SQL语句
+	
+	然而真正对DB的操作是通过框架用mapper.xml中的SQL完成的，因此StudentDaoImpl.java实现类没有存在的必要
+		
+		这里把namespace配置为接口的全包名
+		系统会根据方法所属的Dao接口，找到对应namespace的映射文件中相关的SQL映射
+		接口中的方法名和xml中的ID要一致
+		这就是Mapper的动态代理
+	使用方法见测试类TestDemo2.java
+  -->
+<mapper namespace="crud.dao.IStudentDao">
+
+	<!-- 插入一条记录 -->
+	<!-- id 是该SQL的唯一标识，Java代码中需要使用这个标识-->
+	<!-- parameterType 指定输入类型，会自动获取 可以不指定-->
+	<insert id="insertStudent" parameterType="crud.Student">
+		<!-- 书写SQL语句 -->
+		<!-- #{} 中书写的实体类的属性名 底层使用的是反射 -->
+		insert into t_student(name,age,score)
+		values(#{name},#{age},#{score})
+	</insert>
+	
+	<!-- 获取新插入记录的主键值 -->
+	<insert id="insertStudentCatchId">
+		insert into t_student(name,age,score)
+		values(#{name},#{age},#{score})
+		<!-- 
+			resultType 获取的主键类型
+			keyProperty 取出的主键在Java类中对应的属性名，这里会把取出的主键值直接封装到被插入的Student对象中
+			order id的生成相对于insert语句的执行，前后
+					MySQL先执行insert后生成id 配置为AFTER
+					Oracle相反 配置问BEFORE
+					不设置则会默认根据不同数据库选择
+		-->
+		<selectKey resultType="int" keyProperty="id" order="AFTER">
+			<!-- 2种写法 -->
+			<!-- select @@identity -->
+			select last_insert_id()
+		</selectKey>
+	</insert>
+	
+	<!-- deleteStudentById -->
+	<delete id="deleteStudentById">
+		<!-- 这里#{} 大括号里面存放的值无所谓 -->
+		delete from t_student where id=#{id};
+	</delete>
+	
+	<!-- updateStudent -->
+	<update id="updateStudent">
+		<!-- #{} 中书写的实体类的属性名 底层使用的是反射 -->
+		update t_student
+		set name=#{name},age=#{age},score=#{score}
+		where id=#{id}
+	</update>
+	
+	<!-- selectAllStudents -->
+	<!-- resultType 每查出一个记录，就封装成指定对象
+		2种配置方式：
+		1. 配置为全包名 resultType="crud.Student"
+		2. 在主配置文件SqlMapConfig.xml中配置了别名，resultType="Student"
+	 -->
+	 <!-- （重要）resultType能直接封装到Student的条件是：
+	 		t_student表中的字段名称 和 Student的属性名称相同且一一对应
+	  -->
+	 <!-- 
+	 	如果
+	 	Student中属性是
+	 		id name age score
+	 	t_student表中字段是
+	 		sid sname sage score
+	 	==============================================================
+	 	解决方案1：
+	 	这里的SQL语句就要使用到别名，这样才能继续使用resultType
+	 	select sid id,sname name,sage age,score
+	 	from t_student where tid=#{id}
+	 	==============================================================
+	 	解决方案2：
+	 	使用<resultMap>手动指定字段和属性的对应
+	 	score因为相同，所以不写入resultMap
+	 	比如：
+	 		-参数说明
+	 			type 指定实体类
+	 			id 这个resultMap映射关系的唯一标识
+	 				<id>标签
+	 				<result>标签
+	 				
+	 		<resultMap type="Student" id="StudentMapper">
+	 			<id column="sid" property="id"/>
+	 			<result column="sname" prperty="name"/>
+	 			<result column="sage" prperty="age"/>
+	 		</resultMap>
+	 		<select id="selectAllStudents" resultType="StudentMapper">
+				select * from t_student
+			</select>
+		==============================================================
+	  -->
+	<!-- resultType 输出类型 填写全包名 或 可以在主配置文件中指定别名,这里使用的是别名  -->
+	<select id="selectAllStudents" resultType="Student">
+		select * from t_student
+	</select>
+	
+	<!-- selectStudentMap -->
+	<select id="selectStudentMap" resultType="Student">
+		select * from t_student
+	</select>
+	
+	<!-- selectStudentById -->
+	<select id="selectStudentById" resultType="Student">
+		select * from t_student where id=#{id}
+	</select>
+	<!-- selectStudentByName 模糊查询 -->
+	<!-- 需要进行字符串拼接 -->
+	<select id="selectStudentByName" resultType="Student">
+		<!-- 第1种写法 占位符-->
+		<!-- select * from t_student
+			where name like concat('%',#{name},'%')
+		 -->
+		 <!-- 第2种写法 占位符-->
+		 select * from t_student
+		 where name like '%' #{name} '%'
+		 <!-- 第3种写法 固定值 这里只能写value 会发生SQL注入 比如为空-->
+		 <!-- select * from t_student
+		 where name like '%${value}%' -->
+	</select>
+	
+	<!-- $和#的区别
+		#占位符
+		$字符串拼接符：存在问题 1.SQL注入 2.硬编码，没有使用预编译，效率低
+		使用占位符的时候，有动态参数赋值
+		DEBUG [main] - ==>  Preparing: select * from t_student where name like '%' ? '%' 
+		DEBUG [main] - ==> Parameters: s(String)
+		使用字符串拼接的时候，动态参数为空，且statement是此时才生成编译
+		DEBUG [main] - ==>  Preparing: select * from t_student where name like '%s%' 
+		DEBUG [main] - ==> Parameters: 
+	 -->
+	 
+	 <!-- selectStudentByMap 根据Map进行查询 -->
+	<select id="selectStudentByMap" resultType="Student">
+		<!-- studentId 是查询条件里面的map的key -->
+		<!-- 第1种写法 Map里面放了1个key是studentId的对象 -->
+		select * from t_student where id=#{studentId}
+		<!-- 第2种写法  Map里面放了1个key是student的student对象 -->
+		<!-- select * from t_student where id=#{student.id} -->
+	</select>
+	
+	<!-- 
+		多查询条件无法整体接收问题的解决方法1
+		多个参数封装map
+		selectStudentsByMap
+	 -->
+	 <select id="selectStudentsByMap" resultType="Student">
+	 	select * from t_student
+	 	where name like '%' #{nameCondition} '%'
+	 	and age = #{ageCondition}
+	 </select>
+	 <!-- 
+	 	多查询条件无法整体接收问题的解决方法2
+		通过参数索引#{index}逐个接收每个参数
+		selectStudentsByConditions
+	  -->
+	  <select id="selectStudentsByConditions" resultType="Student">
+	  	select * from t_student
+	  	where name like '%' #{0} '%'
+	  	and age = #{1}
+	  </select>
+	 
+	 <!-- 动态SQL语句 -->
+	 <!-- 
+	 	常用标签：
+	 		<if>
+	 		<where>
+	 		<choose/>
+	 		<foreach>
+	  -->
+	  <!-- if的使用 -->
+	  <!-- 这里写where 1=1 是为了避免单独出现一个where的错误SQL 数据量大的时候影响查询效率 -->
+	  <select id="selectStudentsIf" resultType="Student">
+	  		select * 
+	  		from t_student
+	  		where 1=1
+	  		<if test="name != null and name != ''">
+	  			and name like '%' #{name} '%'
+	  		</if>
+	  		<if test="age > 0">
+	  			and age > #{age}
+	  		</if>
+	  </select>
+	  <!-- where的使用 -->
+	  <!-- 比if要优秀的一点就是不用加where 1=1 如果name和age都不满足条件 那么语句就是 select * from t_student -->
+	  <!-- 第一个if/字标签可以不包含and，但是后续的if子标签必须有and -->
+	  <select id="selectStudentsWhere" resultType="Student">
+	  	select * 
+	  	from t_student
+	  	<where>
+	  		<if test="name != null and name != ''">
+	  		<!-- 这个and可以不写 -->
+	  			and name like'%' #{name} '%'
+	  		</if>
+	  		<if test="age > 0">
+	  		<!-- 这个and必须要写 -->
+	  			and age > #{age}
+	  		</if>
+	  	</where>
+	  </select>
+	 <!-- choose/ 标签的使用 -->
+	 <!-- 比较少使用 -->
+	 <!-- 
+	 	&lt;
+	 	&gt;
+	 	&eq;
+	  -->
+	 <select id="selectStudentsChoose" resultType="Student">
+	 	select *
+	 	from t_student
+	 	<where>
+	 		<choose>
+	 			<when test="name != null and name != ''">
+	 				and name like '%' #{name} '%'
+	 			</when>
+	 			<when test="age > 0">
+	 				and age &gt; #{age}
+	 			</when>
+	 			<otherwise>
+	 				and 1 = 1
+	 			</otherwise>
+	 		</choose>
+	 	</where>
+	 </select>
+	 	
+	 	<!-- foreach/ 标签 -->
+	 	<!-- 实现对数组和集合的遍历
+	 		collection标明要遍历的集合类型 数组或List
+	 		open/close/separator对遍历内容做SQL拼接
+	 		select * from t_student where id in (32,33,34)
+	 	 -->
+	 	 <!-- 数组例子 -->
+	 	 <select id="selectStudentsForeachArray" resultType="Student">
+	 	 	select * 
+	 	 	from t_student
+	 	 	<!-- 这里必须指定为array -->
+	 	 	<if test="array != null and array.length > 0">
+	 	 		where id in
+	 	 		<!-- 这里必须指定为array -->
+	 	 		<foreach collection="array" open="(" close=")" item="myid" separator=",">
+	 	 			#{myid}
+	 	 		</foreach>
+	 	 	</if>
+	 	 </select>
+	 	 
+	 	 <!-- List例子  泛型为Integer基本类型-->
+	 	 <select id="selectStudentsForeachList" resultType="Student">
+	 	 	select * 
+	 	 	from t_student
+	 	 	<!-- 指定为List -->
+	 	 	<if test="list != null and list.size > 0">
+	 	 		where id in
+	 	 		<foreach collection="list" open="(" close=")" item="myid" separator=",">
+	 	 			#{myid}
+	 	 		</foreach>
+	 	 	</if>
+	 	 </select>
+	 	 
+	 	 <!-- List例子  泛型为Student自定义类型-->
+	 	 
+	 	 <select id="selectStudentsForeachListStu" resultType="Student">
+	 	 	<!-- 由于要测试SQL片段 这里注释掉了 -->
+	 	 	<!-- select * 
+	 	 	from t_student
+	 	 	 -->
+	 	 	 <!-- 使用SQL片段 -->
+	 	 	<include refid="selectHead" />
+	 	 	<!-- 指定为List -->
+	 	 	<if test="list != null and list.size > 0">
+	 	 		where id in
+	 	 		<foreach collection="list" open="(" close=")" item="stu" separator=",">
+	 	 			#{stu.id}
+	 	 		</foreach>
+	 	 	</if>
+	 	 </select>
+	 	 <!-- SQL片段 -->
+	 	 <!-- 把重复的SQL语句提取出来 -->
+	 	 <!-- 定义SQL片段 -->
+	 	 <sql id="selectHead">
+	 	 	select * 
+	 	 	from t_student
+	 	 </sql>
+	 	 
+</mapper>

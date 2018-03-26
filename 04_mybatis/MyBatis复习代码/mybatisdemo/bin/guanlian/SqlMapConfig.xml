@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration><!-- 在这个configuration按F2，可以看到下面这些标签配置的先后顺序 -->
+	<!-- 注册属性文件 -->
+	<properties resource="guanlian/jdbc.properties"/>
+	<!-- 别名 包以其子包下所有类   头字母大小都行-->
+	<typeAliases>
+	<!-- 2种指定方式，一般选择第二种 -->
+	<!-- 主要在mapper.xml中如果有使用到全类名的时候，可以直接使用类的简单类名即可 -->
+	<!-- <typeAlias type="crud.Student" alias="Student"/> -->
+		<package name="guanlian.pojo"/>
+	</typeAliases>
+	<!-- 配置运行环境 -->
+	<environments default="env">
+		<environment id="env">
+			<!-- 使用jdbc事务管理 -->
+			<transactionManager type="JDBC" />
+			<!-- 数据库连接池 -->
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}"/>
+				<property name="url" value="${jdbc.url}"/>
+				<property name="username" value="${jdbc.user}"/>
+				<property name="password" value="${jdbc.password}"/>
+			</dataSource>
+		</environment>
+	</environments>
+	<!-- 注册映射文件 -->
+	<mappers>
+		<!-- 配置方法1：指定映射文件路径配置 -->
+		<!-- <mapper resource="crud/dao/IStudentDao.xml"/> -->
+		<!-- 配置方法2：指定为Dao接口的全类名 -->
+		<!-- 需要满足条件：
+				1. 映射文件名和dao接口名一样
+				2. 在同一包中
+				3. mapper.xml中<mapper/>中的namespace为dao全包名
+		 -->
+		 <!-- <mapper class="crud.dao.IStudentDao" /> -->
+		 <!-- 配置方法3： package指定映射文件，多个映射文件场景，实际开发中使用-->
+		 <!-- 需要满足条件
+		 		1. dao使用mapper动态代理实现
+		 		2. 映射文件名和dao接口名一样
+		 		3. 在同一包中
+		 		4. mapper.xml中<mapper/>中的namespace为dao全包名
+		  -->
+		  <package name="guanlian.dao" />
+	</mappers>
+</configuration>

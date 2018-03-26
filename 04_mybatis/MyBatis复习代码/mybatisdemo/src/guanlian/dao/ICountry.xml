@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="guanlian.dao.ICountry">
+	<!-- 所有字段都要写，即使属性名和字段名相同 -->
+	<resultMap type="Country" id="CountryMapper">
+		<id column="cid" property="cid"/>
+		<result column="cname" property="cname"/>
+		<!-- 关联属性映射 -->
+		<!-- 
+			ofType 集合属性的泛型类型
+		 -->
+		<!-- 
+			多表链接查询 一对多 一个国家对应多个人 
+			根据ID查国家以及国家的人信息 
+			第二种方式 
+			修改的内容
+				select 集合的数据来自指定的select语句查询结果，跨namespace要指定
+				column 动态参数
+		 -->
+		<collection property="persons" ofType="Person" 
+		select="guanlian.dao.IPerson.selectPersonByCountryId" column="cid">
+			<!-- 
+			<id column="pid" property="pid"/>
+			<result column="pname" property="pname"/>
+			 -->
+		</collection>
+	</resultMap>
+	
+	<!-- 多表链接查询 一对多 一个国家对应多个人 
+	根据ID查国家以及国家的人信息 
+	第一种方式  -->
+	<!-- 
+	<select id="selectCountryById" resultMap="CountryMapper">
+		select cid,cname,pid,pname
+		from t_country,t_person
+		where cid=#{cid} and cid=countryid
+	</select>
+	 -->
+	 
+	<!-- 多表链接查询 一对多 一个国家对应多个人 
+	根据ID查国家以及国家的人信息 
+	第二种方式 
+	多表分开查询，再链接到一起 -->
+	<!-- 
+	流程是：
+		1. 根据国家ID先查到cid和cname
+		2. 第1步的cid传递给CountryMapper中collection的column="cid"
+		3. 根据第1步传过来的cid，赋值给select="guanlian.dao.IPerson.selectPersonByCountryId"的SQL作为动态参数
+		4. 执行SQL语句查到Person，包装进CountryMapper
+	 -->
+	<!-- 修改 CountryMapper -->
+	<!-- 这里查出来的cid会传递给CountryMapper里面column="cid"
+	作为 select="guanlian.dao.IPerson.selectPersonByCountryId"的参数！
+	-->
+	 <select id="selectCountryById" resultMap="CountryMapper">
+	 	select cid,cname from t_country where cid=#{yyy}
+	 </select>
+	 
+	 <!-- 多表查询 多对一  多个人属于同一个国家-->
+	 <!-- 第二种查询方式 -->
+	 <select id="selectCountryById2" resultType="Country">
+	 	select cid,cname from t_country where cid=#{yyy}
+	 </select>
+	 
+</mapper>
